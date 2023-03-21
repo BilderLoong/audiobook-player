@@ -1,40 +1,64 @@
-import React from 'react'
+import React from "react";
 // import Image from 'next/image'
-import styles from '@/styles/Home.module.css'
-import { parseSync } from 'subtitle'
+// import { parseSync } from 'subtitle'
+import { useFilePicker } from "use-file-picker";
 
 function stopEvent(e: React.UIEvent) {
-    e.stopPropagation()
-    e.preventDefault()
+  e.stopPropagation();
+  e.preventDefault();
 }
 
+// TODO: Test on file drop.
+export default function FileUploader({
+  onFileSelect,
+}: {
+  onFileSelect: (fileList: FileList) => void;
+}) {
+  const [openFileSelector, { plainFiles, errors, loading }] = useFilePicker({});
 
-export default function FileUploader() {
+  const handleInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      onFileSelect(files);
+    }
+  };
 
-    const handleInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files
-        console.table(files);
+  const handleDropFile = async (e: React.DragEvent<HTMLElement>) => {
+    stopEvent(e);
+
+    const files = e.dataTransfer.files;
+    if (files) {
+      onFileSelect(files);
     }
 
-    const handleDropFile = async (e: React.DragEvent<HTMLElement>) => {
-        stopEvent(e)
+    // It seems that the stream version parser doesn't Web API.
+    // So choose the sync parser.
+    // TODO move this to subtitle viewer.
+    // const node = parseSync(await file.text())
+    // node.map(e => {
+    //     if (e.type === 'header') {
+    //         return e.data
+    //     }
 
-        const file = e.dataTransfer.files[0]
-        // It seems that the stream version parser doesn't Web API.
-        // So choose the sync parser.
-        const node = parseSync(await file.text())
-        node.map(e => {
-            if (e.type === 'header') {
-                return e.data
-            }
+    //     return e.data.text
+    // })
+  };
 
-            return e.data.text
-        })
-
-    }
-    return (
-        <section onDrop={handleDropFile} onDragOver={stopEvent} onDragEnter={stopEvent} className={styles.drop_box} >
-            <input onChange={handleInputOnChange} type="file" id="input" multiple />
-        </section>
-    )
+  return (
+    <section
+      onDrop={handleDropFile}
+      onDragOver={stopEvent}
+      onDragEnter={stopEvent}
+      className="bg-slate-500"
+    >
+      <input
+        onChange={handleInputOnChange}
+        onClick={openFileSelector}
+        type="file"
+        id="input"
+        accept=".srt,.vtt,.mp4,.avi,.mov,.mp3,.wav,.mkv,.flv,.wmv,.m4a,.m4v,.3gp,.aac,.ac3,.flac,.ogg,.opus,.webm"
+        multiple
+      />
+    </section>
+  );
 }
