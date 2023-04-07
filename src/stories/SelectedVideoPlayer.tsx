@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { useFilePicker } from "use-file-picker";
 import FileUploader from "./FileUploader";
@@ -6,13 +6,12 @@ import FileUploader from "./FileUploader";
 export default function SelectedVideoPlayer() {
   // TODO Here add new show video player after selecting file
   // by using URL.createObjectURL(file) and doesn't forget to revoke it.
-
-  const [openFileSelector, { filesContent, loading, plainFiles }] =
-    useFilePicker({
-      readAs: "DataURL",
-      multiple: false,
-    });
   const [videoUrl, setVideoUrl] = useState("");
+  useEffect(() => {
+    return () => {
+      URL.revokeObjectURL(videoUrl);
+    };
+  }, [videoUrl]);
 
   //   if (loading) {
   //     return <div>Loading...</div>;
@@ -23,7 +22,6 @@ export default function SelectedVideoPlayer() {
   ) : (
     <FileUploader
       onFileSelect={(files) => {
-        debugger;
         return setVideoUrl(URL.createObjectURL(files[0]));
       }}
     />

@@ -3,37 +3,42 @@ import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
-  addons: ["@storybook/addon-links", "@storybook/addon-essentials", "@storybook/addon-interactions"],
+  addons: [
+    "@storybook/addon-links",
+    "@storybook/addon-essentials",
+    "@storybook/addon-interactions",
+  ],
   framework: {
     name: "@storybook/nextjs",
-    options: {}
+    options: {},
   },
+  staticDirs: ["../src/stories/__tests__/static"],
   // pnpm storybook --debug-webpack will show the webpack config.
   webpackFinal: async (config, options) => {
+    const { resolve = {} } = config;
+    const { fallback = {} } = resolve;
+    const plugins = config.plugins ?? [];
+
     config = {
       ...config,
       resolve: {
-        ...config.resolve,
+        ...resolve,
         fallback: {
-          ...config.resolve?.fallback,
+          ...fallback,
         },
       },
-      plugins: [...config.plugins ?? [],
-      new NodePolyfillPlugin(),
-      ]
+      plugins: [...plugins, new NodePolyfillPlugin()],
+    };
 
-    }
-
-
-    return config
+    return config;
   },
   docs: {
-    autodocs: "tag"
+    autodocs: "tag",
   },
   //https://storybook.js.org/docs/react/builders/webpack#lazy-compilation
   core: {
     builder: {
-      name: '@storybook/builder-webpack5',
+      name: "@storybook/builder-webpack5",
       options: {
         lazyCompilation: true,
         fsCache: true,
@@ -41,4 +46,4 @@ const config: StorybookConfig = {
     },
   },
 };
-export default config
+export default config;

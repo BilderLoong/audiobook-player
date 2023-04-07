@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 // import Image from 'next/image'
 // import { parseSync } from 'subtitle'
 import { useFilePicker } from "use-file-picker";
@@ -12,9 +12,11 @@ function stopEvent(e: React.UIEvent) {
 export default function FileUploader({
   onFileSelect,
 }: {
-  onFileSelect: (fileList: FileList) => void;
+  onFileSelect: (fileList: FileList | File[]) => void;
 }) {
-  const [openFileSelector, { plainFiles, errors, loading }] = useFilePicker({});
+  const [openFileSelector, { plainFiles, errors, loading }] = useFilePicker({
+    readFilesContent: false,
+  });
 
   const handleInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -22,6 +24,12 @@ export default function FileUploader({
       onFileSelect(files);
     }
   };
+
+  useEffect(() => {
+    if (plainFiles.length && plainFiles[0] instanceof Blob) {
+      onFileSelect(plainFiles);
+    }
+  }, [plainFiles, onFileSelect]);
 
   const handleDropFile = async (e: React.DragEvent<HTMLElement>) => {
     stopEvent(e);
@@ -44,21 +52,32 @@ export default function FileUploader({
     // })
   };
 
+  if (errors.length) {
+    return <div>{JSON.stringify(errors)}</div>;
+  }
+
+  if (loading) {
+    return <div>Loading</div>;
+  }
+
   return (
     <section
       onDrop={handleDropFile}
       onDragOver={stopEvent}
       onDragEnter={stopEvent}
+      onClick={openFileSelector}
       className="bg-slate-500"
+      data-testid="file-uploader"
+      aria-label="File uploader"
     >
-      <input
+      Click or drop here to choose files.
+      {/* <input
         onChange={handleInputOnChange}
-        onClick={openFileSelector}
         type="file"
         id="input"
         accept=".srt,.vtt,.mp4,.avi,.mov,.mp3,.wav,.mkv,.flv,.wmv,.m4a,.m4v,.3gp,.aac,.ac3,.flac,.ogg,.opus,.webm"
         multiple
-      />
+      /> */}
     </section>
   );
 }
