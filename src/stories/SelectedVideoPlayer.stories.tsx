@@ -37,6 +37,12 @@ type Story = StoryObj<typeof SelectedVideoPlayer>;
 
 export const Default: Story = {
   args: {},
+  loaders: [
+    async () => {
+      const dragEvent = await fetchDataTransfer("test.mp4");
+      return { dragEvent };
+    },
+  ],
   render: (args) => {
     return <SelectedVideoPlayer />;
   },
@@ -44,11 +50,9 @@ export const Default: Story = {
 
 export const WithVideo: Story = {
   ...Default,
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, loaded: { dragEvent } }) => {
     const canvas = within(canvasElement);
     const fileUploader = canvas.getByText(/drop/);
-
-    const dragEvent = await fetchDataTransfer("test.mp4");
     if (!dragEvent) return;
 
     createEvent.drop(fileUploader, dragEvent);
